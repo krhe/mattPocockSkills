@@ -4,25 +4,36 @@ Good interfaces make testing natural:
 
 1. **Accept dependencies, don't create them**
 
-   ```typescript
+   ```C#
    // Testable
-   function processOrder(order, paymentGateway) {}
+   public sealed class OrderProcessor
+   {
+      private readonly IPaymentGateway _paymentGateway;
 
-   // Hard to test
-   function processOrder(order) {
-     const gateway = new StripeGateway();
-   }
+      public OrderProcessor(IPaymentGateway paymentGateway)
+      {
+         _paymentGateway = paymentGateway;
+      }
+
+      public PaymentResult ProcessOrder(Order order)
+      {
+         return _paymentGateway.Charge(order.TotalPrice);
+      }
+   }   
    ```
 
 2. **Return results, don't produce side effects**
 
-   ```typescript
-   // Testable
-   function calculateDiscount(cart): Discount {}
-
+   ```C#
    // Hard to test
-   function applyDiscount(cart): void {
-     cart.total -= discount;
+   public sealed class OrderProcessor
+   {
+      public PaymentResult ProcessOrder(Order order)
+      {
+         var paymentGateway = new StripePaymentGateway();
+
+         return paymentGateway.Charge(order.TotalPrice);
+      }
    }
    ```
 

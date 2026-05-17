@@ -21,16 +21,21 @@ At system boundaries, design interfaces that are easy to mock:
 
 Pass external dependencies in rather than creating them internally:
 
-```typescript
+```C#
 // Easy to mock
-function processPayment(order, paymentClient) {
-  return paymentClient.charge(order.total);
+public interface IPaymentClient
+{
+    PaymentResult Charge(decimal amount);
 }
 
-// Hard to mock
-function processPayment(order) {
-  const client = new StripeClient(process.env.STRIPE_KEY);
-  return client.charge(order.total);
+public static class PaymentProcessor
+{
+    public static PaymentResult ProcessPayment(
+        Order order,
+        IPaymentClient paymentClient)
+    {
+        return paymentClient.Charge(order.Total);
+    }
 }
 ```
 
@@ -40,16 +45,21 @@ Create specific functions for each external operation instead of one generic fun
 
 ```typescript
 // GOOD: Each function is independently mockable
-const api = {
-  getUser: (id) => fetch(`/users/${id}`),
-  getOrders: (userId) => fetch(`/users/${userId}/orders`),
-  createOrder: (data) => fetch('/orders', { method: 'POST', body: data }),
-};
+// GOOD: specific operations are easy to mock
+public interface IStimulator
+{
+    void SetIntensity(double milliamps);
 
-// BAD: Mocking requires conditional logic inside the mock
-const api = {
-  fetch: (endpoint, options) => fetch(endpoint, options),
-};
+    void StartPulse(TimeSpan duration);
+
+    void Stop();
+}
+
+// BAD: mocking requires conditional logic inside the mock
+public interface IDeviceConnection
+{
+    DeviceResponse SendCommand(string command, object? payload = null);
+}
 ```
 
 The SDK approach means:
